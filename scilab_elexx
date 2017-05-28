@@ -57,16 +57,16 @@
 		x = complex(in_real, in_imag) / (2^0.5)
 	endfunction
 
-	function x = source_RMS_polar(in_mag, in_degree)
-		rad = deg2rad(in_degree)
-		vector = complex(cos(rad), sin(rad))
-		x = in_mag * vector
+	function x = source_RMS_polar(mag, deg)
+		rad = deg2rad(deg)
+		unit_vector = complex(cos(rad), sin(rad))
+		x = mag * unit_vector
 	endfunction
 
-	function x = source_peak_polar(in_mag, in_degree)
-		rad = deg2rad(in_degree)
-		vector = complex(cos(rad), sin(rad))
-		x = (in_mag * vector) / (2^0.5)
+	function x = source_peak_polar(mag, deg)
+		rad = deg2rad(deg)
+		unit_vector = complex(cos(rad), sin(rad))
+		x = (mag * unit_vector) / (2^0.5)
 	endfunction
 
 
@@ -74,11 +74,15 @@
 
 // Power factor to angle conversion and vice versa
 
-	function angle = pf_2_angle(x)			// FIXME shoudl account for C & L
-		angle =  acos(x) *180/%pi
+	function angle_deg = pf2deg(x)	// Enter L or C		// FIXME shoudl account for capacitor and inductor
+		if((x<0) | (x>1))
+			error(" Error: Invalid power factor")
+		end
+		angle_deg = rad2deg(acos(x))
+		printf("\n\t*** Caution *** set result to neg if capacitive\n")
 	endfunction
 
-	function power_factor = angle_2_pf(x)
+	function power_factor = deg2pf(x)
 		power_factor = cos(deg2rad(x))
 	endfunction
 
