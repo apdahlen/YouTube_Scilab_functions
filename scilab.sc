@@ -8,7 +8,7 @@
 //    will run on Linux, Windows and Mac. It's an easy to use scripting language with
 //    command line like interface. Also, the price is right...
 //
-// 2) We could argue that phasors values are assumed to by RMS values. In fact, that
+// 2) We could argue that phasors values are assumed to be RMS values. In fact, that
 //    is what I have done in this code. All internal representations are in RMS form.
 //    Use these functions with caution as many textbook authors use peak voltages
 //    especially in the introductory sections before they have introduced power. This
