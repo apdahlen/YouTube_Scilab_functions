@@ -5,27 +5,35 @@
 // Notes:
 //
 // 1) Written for Scilab. Why Scilab? Why not? It is a common scientific language that
-//    will run on Linux, Windows and MAc. It is an easy to use scripted language with 
-//    command line like interface. Also, the price is right... 
+//    will run on Linux, Windows and Mac. It's an easy to use scripting language with
+//    command line like interface. Also, the price is right...
 //
-// 2) Your’s truly thinks in terms of RMS. Use these functions with caution as many
-//     textbook authors use peak voltages. This is especially true for introductory
-//     Electrical Engineering with texts such as Alexander and Irwin.
+// 2) We could argue that phasors values are assumed to by RMS values. In fact, that
+//    is what I have done in this code. All internal representations are in RMS form.
+//    Use these functions with caution as many textbook authors use peak voltages
+//    especially in the introductory sections before they have introduced power. This
+//    statement is is true for introductory Electrical Engineering with texts such as
+//    Alexander and Irwin.
 //
 // 3) All operations could have been carried out using a hand held calculator such
 //    as my trusty HP 35s.
 //
 // 4) Scilab trig functions operate using radians. However these function are written
-//    using degrees.
+//    using degrees. Helping functions deeg2rad() and rad2deg() are included.
 //
 
+
+// Electrical engineering constants
+
+	e = %e
+	j = %i
 
 
 
 // Radian and degree conversions
 
-	function rad = deg2rad(in_degree)
-		rad = (%pi*in_degree) / 180
+	function rad = deg2rad(deg)
+		rad = (%pi*deg) / 180
 	endfunction
 
 	function deg = rad2deg(rad)
@@ -36,6 +44,7 @@
 
 
 // RMS and peak conversions
+
 	function out = RMS2peak(in)
 		out = in * 2^0.5
 	endfunction
@@ -43,7 +52,6 @@
 	function out = peak2RMS(in)
 		out = in / 2^0.5
 	endfunction
-
 
 
 
@@ -72,9 +80,9 @@
 
 
 
-// Power factor to angle conversion and vice versa
+// Power factor to angle conversion
 
-	function angle_deg = pf2deg(x)	// Enter L or C		// FIXME shoudl account for capacitor and inductor
+	function angle_deg = pf2deg(x)
 		if((x<0) | (x>1))
 			error(" Error: Invalid power factor")
 		end
@@ -91,25 +99,25 @@
 
 // Convert reactive component to impence and vice versa
 
-	function impence = Z_cap(value, frequency)
+	function impence = calc_cap_Z(value, frequency)
 		omega = 2 * %pi * frequency
 		X_C = 1 / (omega * value)
 		impence = complex(0, -X_C)
 	endfunction
 
-	function impence = Z_ind(value, frequency)
+	function impence = calc_ind_Z(value, frequency)
 		omega = 2 * %pi * frequency
 		X_L = omega * value
 		impence = complex( 0,  X_L)
 	endfunction
 
-	function F = calc_F(Z, frequency)
+	function F = calc_cap_value(Z, frequency)
 		omega = 2 * %pi * frequency
 		X_C = -imag(Z)
 		F = 1 /(omega * X_C)
 	endfunction
 
-	function H = calc_H(Z, frequency)
+	function H = calc_ind_value(Z, frequency)
 		omega = 2 * %pi * frequency
 		X_L = imag(Z)
 		H = X_L / omega
@@ -118,34 +126,38 @@
 
 // These function are used to display results in an easy to understand format
 
-	function print_polar(x)
+	function display_polar(x)
 		mag = abs(x)
 		rad = atan(imag(x), real(x))
 		deg = rad2deg(rad)
 		printf ("    %0.2f ∠ %0.2f", mag, deg)
 	endfunction
 
-	function print_current(x, frequency)
-	    printf ("    %0.2f + %0.2fj A RMS\n",real(x), imag(x))
+	function display_current(x, frequency)
 		mag = abs(x)
 		rad = atan(imag(x), real(x))
 		deg = rad2deg(rad)
-		printf ("    %0.2f ∠ %0.2f A RMS\n", mag, deg)
-		printf ("    %0.2f ∠ %0.2f A peak\n", RMS2peak(mag), deg)
-		printf ("    V(t) = %0.2f COS(2π%st + %0.2f°) A", RMS2peak(mag), string(frequency), deg)
+		printf ("    %0.2f + %0.2fj A_RMS\n",real(x), imag(x))
+		printf ("    %0.2f ∠ %0.2f° A_RMS\n", mag, deg)
+		printf ("    %0.2f ∠ %0.2f° A_peak\n", RMS2peak(mag), deg)
+		printf ("    %0.2fe^(j%0.2f°) A_peak \n", RMS2peak(mag), deg)
+		printf ("    %0.2f[COS(%0.2f°) + jSIN(%0.2f°)] A_peak\n", RMS2peak(mag), deg, deg)
+		printf ("    V(t) = %0.2f COS(2π%st + %0.2f°) A_peak ", RMS2peak(mag), string(frequency), deg)
 	endfunction
 
-	function print_voltage(x, frequency)
-	    printf ("    %0.2f + %0.2fj V RMS\n",real(x), imag(x))
+	function display_voltage(x, frequency)
 		mag = abs(x)
 		rad = atan(imag(x), real(x))
 		deg = rad2deg(rad)
-		printf ("    %0.2f ∠ %0.2f V RMS\n", mag, deg)
-		printf ("    %0.2f ∠ %0.2f V peak\n", RMS2peak(mag), deg)
-		printf ("    V(t) = %0.2f COS(2π%st + %0.2f°) V", RMS2peak(mag), string(frequency), deg)
+		printf ("    %0.2f + %0.2fj V_RMS\n",real(x), imag(x))
+		printf ("    %0.2f ∠ %0.2f° V_RMS\n", mag, deg)
+		printf ("    %0.2f ∠ %0.2f° V_peak\n", RMS2peak(mag), deg)
+		printf ("    %0.2fe^(j%0.2f°) V_peak \n", RMS2peak(mag), deg)
+		printf ("    %0.2f[COS(%0.2f°) + jSIN(%0.2f°)] V_peak\n", RMS2peak(mag), deg, deg)
+		printf ("    V(t) = %0.2f COS(2π%st + %0.2f°) V_peak", RMS2peak(mag), string(frequency), deg)
 	endfunction
 	
-	function print_complex_power(x)
+	function display_complex_power(x)
 		printf("\tReal power (P) = %0.2f W\n", real(x))
 		printf("\tReactive power (Q) = %0.2f VAR \n", imag(x))
 		
@@ -157,9 +169,9 @@
 		if (deg == 0)
 			printf ("\Resistive with a power factor of 1\n")
 		elseif (deg > 0)
-			printf ("\tPower factor = %0.2f (Inductive)\n", angle_2_pf(deg))
+			printf ("\tPower factor = %0.2f (Inductive)\n", deg2pf(deg))
 		else
-			printf ("\tPower factor = %0.2f (Capacitive) \n", angle_2_pf(deg))
+			printf ("\tPower factor = %0.2f (Capacitive) \n", deg2pf(deg))
 		end
 	endfunction
 
